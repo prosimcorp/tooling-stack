@@ -1,0 +1,35 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: external-snapshotter
+
+resources:
+  # Deploy the CRDs
+  - https://github.com/kubernetes-csi/external-snapshotter//client/config/crd/?ref=v6.0.1
+
+  - namespace.yaml
+
+  # Deploy the controller
+  - https://github.com/kubernetes-csi/external-snapshotter//deploy/kubernetes/snapshot-controller/?ref=v6.0.1
+
+replicas:
+  - name: snapshot-controller
+    count: 1
+
+patches:
+  # DISCLAIMER:
+  # This ClusterRoleBinding is correctly created by the deployment but some cloud providers (GCP) change it on the fly,
+  # using dark techniques such as the "addons manager" (and it is not possible to disable it from GKE).
+  # We change its name in order to make it harder to locate it.
+  # ATTENTION:
+  # in the future, if Google can change this again, simply create a parallel ClusterRoleBinding between the same
+  # ServiceAccount and the ClusterRole
+  - patch: |
+      - op: replace
+        path: /metadata/name
+        value: snapshot-controller-role-self-managed
+    target: &deployment
+      group: rbac.authorization.k8s.io
+      version: v1
+      kind: ClusterRoleBinding
+      name: snapshot-controller-role

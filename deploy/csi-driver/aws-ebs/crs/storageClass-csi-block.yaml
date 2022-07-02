@@ -1,0 +1,10 @@
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: csi-block
+provisioner: ebs.csi.aws.com
+allowVolumeExpansion: true
+parameters:
+  tagSpecification_1: "pvcnamespace={{ .PVCNamespace }}"
+  tagSpecification_2: "pvcname={{ .PVCName }}"
+  tagSpecification_3: "pvname={{ .PVName }}"

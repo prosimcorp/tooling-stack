@@ -1,0 +1,87 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../base
+
+commonLabels:
+  app.tooling-stack/environment: develop
+
+patches:
+
+  # Set develop values for Cert Manager
+  - patch: |
+      - op: add
+        path: /spec/chart/spec/valuesFiles/-
+        value: ./deploy/cert-manager/operator/values-develop.yaml
+    target:
+      group: helm.toolkit.fluxcd.io
+      version: v2beta1
+      kind: HelmRelease
+      name: cert-manager
+
+  # Set develop values for External DNS
+  - patch: |
+      - op: add
+        path: /spec/chart/spec/valuesFiles/-
+        value: ./deploy/external-dns/operator/values-develop.yaml
+    target:
+      group: helm.toolkit.fluxcd.io
+      version: v2beta1
+      kind: HelmRelease
+      name: external-dns
+
+  # Set develop values for External Secrets
+  - patch: |
+      - op: add
+        path: /spec/chart/spec/valuesFiles/-
+        value: ./deploy/external-secrets/operator/values-develop.yaml
+    target:
+      group: helm.toolkit.fluxcd.io
+      version: v2beta1
+      kind: HelmRelease
+      name: external-secrets
+
+  # Set develop values for Ingress NGINX
+  - patch: |
+      - op: add
+        path: /spec/chart/spec/valuesFiles/-
+        value: ./deploy/ingress-nginx/values-develop.yaml
+    target:
+      group: helm.toolkit.fluxcd.io
+      version: v2beta1
+      kind: HelmRelease
+      name: ingress-nginx
+
+  # Set develop values for Metrics Server
+  - patch: |
+      - op: add
+        path: /spec/chart/spec/valuesFiles/-
+        value: ./deploy/metrics-server/values-develop.yaml
+    target:
+      group: helm.toolkit.fluxcd.io
+      version: v2beta1
+      kind: HelmRelease
+      name: metrics-server
+
+  # Set develop values for Reloader
+  - patch: |
+      - op: add
+        path: /spec/chart/spec/valuesFiles/-
+        value: ./deploy/reloader/values-develop.yaml
+    target:
+      group: helm.toolkit.fluxcd.io
+      version: v2beta1
+      kind: HelmRelease
+      name: reloader
+
+  # Set develop values for Snapscheduler
+  - patch: |
+      - op: add
+        path: /spec/chart/spec/valuesFiles/-
+        value: ./deploy/snapscheduler/values-develop.yaml
+    target:
+      group: helm.toolkit.fluxcd.io
+      version: v2beta1
+      kind: HelmRelease
+      name: snapscheduler

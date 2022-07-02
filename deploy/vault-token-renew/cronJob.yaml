@@ -1,0 +1,26 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: vault-token-renew
+spec:
+  schedule: "* */24 * * *"
+  successfulJobsHistoryLimit: 5
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: vault-token-renew
+            image: curlimages/curl:7.83.1
+            envFrom:
+            - secretRef:
+                name: vault-token-global
+            - configMapRef:
+                name: vault-token-renew-url
+            imagePullPolicy: IfNotPresent
+            command:
+            - /bin/sh
+            - -c
+            - 'curl --header "X-Vault-Token: $token" --request POST $VAULT_URL/v1/auth/token/renew-self > /dev/null'
+          restartPolicy: Never

@@ -1,0 +1,21 @@
+# DISCLAIMER: THESE VALUES ARE FOR DEVELOPMENT PURPOSES ONLY.
+# PLEASE, DON'T DO DIRTY THINGS
+
+ingress-nginx:
+  controller:
+    # Mark the created ingressClass as the default in the cluster
+    ingressClassResource:
+      default: true
+
+    # Enforce the reliability enabling HA for the controller
+    autoscaling:
+      enabled: true
+
+    # Enable SSL connections directly to the services when requested on annotations
+    extraArgs:
+      enable-ssl-passthrough: "true"
+
+    # Set the LB as type NLB for AWS to allow pods know the IPs behind the connections
+    service:
+      annotations:
+        service.beta.kubernetes.io/aws-load-balancer-type: nlb

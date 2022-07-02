@@ -1,0 +1,7 @@
+# DISCLAIMER: THESE VALUES ARE FOR PRODUCTION PURPOSES ONLY.
+# PLEASE, DON'T DO DIRTY THINGS
+
+cert-manager:
+
+  # Install the CRDs inside the cluster as part of the release process
+  installCRDs: true
