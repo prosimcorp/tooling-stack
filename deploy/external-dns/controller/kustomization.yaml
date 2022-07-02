@@ -1,0 +1,13 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: external-dns
+
+resources:
+  # ATTENTION:
+  # Before the next steps, it is mandatory to have created an IAM role acording to your provider
+  # Of course, without this IAM role, the controller can not work properly because of the permissions
+  # Ref: https://github.com/prosimcorp/tooling-stack.git//examples/<provider>/iam/external-dns.md
+
+  # Deploy the controller
+  - https://github.com/kubernetes-sigs/external-dns.git//kustomize/?ref=v0.12.0

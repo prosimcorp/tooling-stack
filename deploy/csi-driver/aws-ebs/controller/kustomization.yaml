@@ -1,0 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: kube-system
+
+resources:
+  # ATTENTION:
+  # Before the next steps, it is mandatory to have created an IAM role
+  # (attached to the worked nodes or to the Service Account with IRSA)
+  # Of course, without this IAM role, the driver can not work properly because of the permissions
+  # Ref: https://github.com/kubernetes-sigs/aws-ebs-csi-driver/blob/master/docs/example-iam-policy.json
+
+  # Deploy the driver
+  - https://github.com/kubernetes-sigs/aws-ebs-csi-driver.git//deploy/kubernetes/overlays/stable/?ref=v1.6.1
+
+patches:
+  # Deploy the main DaemonSet able to tolerate all kind of nodes
+  - patch: |
+      - op: replace
+        path: /spec/template/spec/tolerations
+        value:
+          - operator: Exists
+    target:
+      group: apps
+      version: v1
+      kind: DaemonSet
+      name: ebs-csi-node

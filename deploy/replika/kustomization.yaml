@@ -1,0 +1,11 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: replika
+
+resources:
+  - https://github.com/prosimcorp/replika//deploy/?ref=v0.2.5
+
+  # Add your custom resources
+  - clusterRole-replika-custom-resources.yaml
+  - clusterRoleBinding-replika-custom-resources.yaml
