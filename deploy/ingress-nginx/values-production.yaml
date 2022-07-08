@@ -37,8 +37,3 @@ ingress-nginx:
     # Enable SSL connections directly to the services when requested on annotations
     extraArgs:
       enable-ssl-passthrough: "true"
-
-    # Set the LB as type NLB for AWS to allow pods know the IPs behind the connections
-    service:
-      annotations:
-        service.beta.kubernetes.io/aws-load-balancer-type: nlb

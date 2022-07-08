@@ -71,11 +71,10 @@ Learning by example is funnier, so the content of the configmap is like the foll
 apiVersion: v1
 data:
   provider: AWS
-  account: "111111111111"
+  account: "111111111111" # Project ID or Account depending on the provider
+  environment: develop # The alias for the environment to name the project
   region: eu-west-1
-  environment: develop
   name: your-cluster-name
-  domain: infrastructure.your-company.com
 kind: ConfigMap
 metadata:
   name: cluster-info

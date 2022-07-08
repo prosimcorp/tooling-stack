@@ -1,0 +1,29 @@
+---
+apiVersion: reforma.prosimcorp.com/v1alpha1
+kind: Patch
+metadata:
+  name: csi-standard-volumesnapshotclass
+spec:
+  synchronization:
+    time: "5s"
+  sources:
+    - apiVersion: v1
+      kind: ConfigMap
+      name: cluster-info
+      namespace: kube-system
+  target:
+    apiVersion: snapshot.storage.k8s.io/v1
+    kind: VolumeSnapshotClass
+    name: csi-standard
+    namespace: ""
+  patchType: application/merge-patch+json
+  template: |
+    {{- $source := (index . 1) -}}
+    
+    {{- if eq ($source.data.provider | lower) "aws" }}
+    driver: ebs.csi.aws.com
+    {{- end }}
+
+    {{- if eq ($source.data.provider | lower) "gcp" }}
+    driver: pd.csi.storage.gke.io
+    {{ end }}

@@ -4,7 +4,7 @@ metadata:
   name: external-dns-deployment-common
 spec:
   synchronization:
-    time: "5s"
+    time: "1m"
   sources:
     - apiVersion: v1
       kind: ConfigMap

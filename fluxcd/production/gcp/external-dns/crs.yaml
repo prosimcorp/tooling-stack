@@ -1,0 +1,15 @@
+---
+# Deploy External DNS CRs
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
+kind: Kustomization
+metadata:
+  name: external-dns-crs
+  namespace: flux-system
+spec:
+  interval: 10m
+  retryInterval: 1m
+  path: ./deploy/external-dns/crs/gcp
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: tooling-stack
