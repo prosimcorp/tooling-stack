@@ -1,8 +1,7 @@
----
 apiVersion: reforma.prosimcorp.com/v1alpha1
 kind: Patch
 metadata:
-  name: external-dns-deployment
+  name: external-dns-deployment-common
 spec:
   synchronization:
     time: "5s"
@@ -22,9 +21,12 @@ spec:
     {{- $target := (index . 0) -}}
 
     {{/* Get the original flags of the target */}}
+    {{- $old_target_args := index $target.spec.template.spec.containers 0 -}}
+    {{- $old_target_args := $old_target_args.args -}}
+
+    {{/* Craft new flags for the target */}}
     {{- $target_args := list -}}
 
-    {{/* Flags for all the cloud providers */}}
     {{- $target_args = append $target_args "--log-level=info" -}}
     {{- $target_args = append $target_args "--log-format=json" -}}
     {{- $target_args = append $target_args "--source=ingress" -}}
@@ -32,19 +34,17 @@ spec:
     {{- $target_args = append $target_args "--interval=1m" -}}
     {{- $target_args = append $target_args (cat "--txt-owner-id=" $source.data.name | nospace) -}}
 
-    {{/* Flags for AWS only */}}
-    {{- if eq ($source.data.provider | lower) "aws" }}
-    {{- $target_args = append $target_args "--provider=aws" -}}
-    {{- $target_args = append $target_args "--aws-zone-type=public" -}}
-    {{- end }}
+    {{/* Check if all flags are already present */}}
+    {{- $counter := int 0 -}}
+    {{- range $target_args -}}
+      {{- if has . $old_target_args -}}
+        {{- $counter = add $counter 1 -}}
+      {{- end -}}
+    {{- end -}}
 
-    {{/* Flags for GCP only */}}
-    {{- if eq ($source.data.provider | lower) "gcp" }}
-    {{- $target_args = append $target_args "--provider=google" -}}
-    {{- $target_args = append $target_args (cat "--google-project=" $source.data.account | nospace) -}}
-    {{- end }}
-
+    {{- if ne $counter (len $target_args) -}}
     - op: replace
       path: /spec/template/spec/containers/0/args
-      value:        
+      value:
         {{- $target_args | uniq | toYaml | nindent 4 -}}
+    {{- end -}}

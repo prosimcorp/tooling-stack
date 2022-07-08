@@ -4,5 +4,4 @@ kind: Kustomization
 namespace: external-dns
 
 resources:
-- patch-external-dns-deployment.yaml
-- patch-external-dns-service-account.yaml
+- patch-external-dns-deployment-common.yaml

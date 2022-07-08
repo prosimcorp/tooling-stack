@@ -1,7 +1,0 @@
-apiVersion: v1
-data:
-  VAULT_URL: https://vault.infrastructure.your-comapny.com
-kind: ConfigMap
-metadata:
-  creationTimestamp: null
-  name: vault-token-renew-url
