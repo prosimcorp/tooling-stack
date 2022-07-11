@@ -1,0 +1,36 @@
+apiVersion: reforma.prosimcorp.com/v1alpha1
+kind: Patch
+metadata:
+  name: external-dns-deployment-aws
+spec:
+  synchronization:
+    time: "1m"
+  sources:
+    - apiVersion: v1
+      kind: ConfigMap
+      name: cluster-info
+      namespace: kube-system
+  target:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: external-dns
+    namespace: external-dns
+  patchType: application/json-patch+json
+  template: |
+    {{- $source := (index . 1) -}}
+    {{- $target := (index . 0) -}}
+
+    {{/* Get the original flags of the target */}}
+    {{- $target_args := index $target.spec.template.spec.containers 0 -}}
+    {{- $target_args := $target_args.args -}}
+
+    {{/* Flags for AWS only */}}
+    {{- if eq ($source.data.provider | lower) "aws" }}
+    {{- $target_args = append $target_args "--provider=aws" -}}
+    {{- $target_args = append $target_args "--aws-zone-type=public" -}}
+    {{- end }}
+
+    - op: replace
+      path: /spec/template/spec/containers/0/args
+      value:
+        {{- $target_args | uniq | toYaml | nindent 4 -}}

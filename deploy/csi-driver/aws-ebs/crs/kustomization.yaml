@@ -6,4 +6,4 @@ namespace: kube-system
 resources:
   - patch-aws-csi-driver-controller-service-account.yaml
   - patch-aws-csi-driver-node-service-account.yaml
-  - storageClass-csi-block.yaml
+  - storageClass-csi-standard.yaml
