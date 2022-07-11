@@ -4,11 +4,10 @@ metadata:
   name: aws-csi-driver
   namespace: flux-system
 spec:
-  suspend: true
   interval: 10m
   retryInterval: 1m
   path: ./deploy/csi-driver/aws-ebs/controller
-  prune: true
+  prune: false
   sourceRef:
     kind: GitRepository
     name: tooling-stack

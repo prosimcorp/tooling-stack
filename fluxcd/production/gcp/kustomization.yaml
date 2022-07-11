@@ -23,17 +23,6 @@ patches:
       kind: HelmRelease
       name: cert-manager
 
-  # Set production values for External Secrets
-  - patch: |
-      - op: add
-        path: /spec/chart/spec/valuesFiles/-
-        value: ./deploy/external-secrets/operator/values-production.yaml
-    target:
-      group: helm.toolkit.fluxcd.io
-      version: v2beta1
-      kind: HelmRelease
-      name: external-secrets
-
   # Set production values for Ingress NGINX
   - patch: |
       - op: add

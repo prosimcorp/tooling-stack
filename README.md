@@ -34,52 +34,34 @@ As SREs, we need reliability on the operators we use, and some tools must be con
 When a new cluster is created, it needs a whole tooling stack deployed.
 
 One of the problem we detected in te past is about SREs finding some bug on their clusters' tooling. The procedure this
-case would be to fix it and upgrade the cluster, then apply the changes to the rest of the clusters, spending a lot of time of
-different people to do the task, which is basically replicating the changes. Because of this, we decided to
+case would be to fix it and upgrade the cluster, then apply the changes to the rest of the clusters, spending a lot of 
+time of different people to do the task, which is basically replicating the changes. Because of this, we decided to
 provide a tooling stack, well tested and integrated where everyone can collaborate once and rise the improvements
 easier.
 
 ## What you should expect
 
 This stack is made on top of well tested tools, but this does NOT mean zero space for experiments.
-Some newer tools will be tested on separated branches if they help the developers or SRE members to work easier and faster.
+Some newer tools will be tested on separated branches if we detect they help the developers or SRE members to work easier 
+and faster.
 
-While polishing any tool inside the stack, some parameters could change between what we consider `develop` environment, and
-`production`: all the changes are always tested on `develop` environment first and stabilized before promoting them to `production`
-when changes become solid.
+While polishing any tool inside the stack, some parameters could differ between what we consider `develop` environment, and
+`production`: all the changes are always tested on `develop` environment first and stabilized, before promoting them 
+to `production` when changes become solid.
 
-Deploying the stack with `develop` parameters you can test all the stack with latest changes and collaborate to improve it.
+By deploying the stack with `develop` parameters you can test all the stack with the latest changes, and collaborate 
+to improve it.
+
+We can not cover the specific use case for all the cloud providers. For that reason we have decided to keep the scope
+limited to the major three or four, and depending on the time we can spend on this project, increase the number in the future. 
+The problem here is not to maintain the agnostic operators or controllers with the most sane config parameters, but 
+those that are attached directly to a provider, like CSI controllers, that force us to do some magic tricks:
+**cough! cough! Amazon**
 
 ## Some requirements here
 
 > All the following requirements are created inside Kubernetes on cluster creation if you create the cluster using
 > [Automated EKS](https://github.com/prosimcorp/automated-eks)
-
-### External Secrets
-
-**A first Secret resource with the Vault credentials.** This Secret is needed by External Secrets to get the credentials
-from Vault, and generate all the Secret resources required by later deployments at change, such as developers' applications.
-
-### A very special ConfigMap
-
-**A ConfigMap called `cluster-info`**, deployed inside the namespace `kube-system`. This resource is used to customize
-some deployments according to the cloud provider, the environment, etc.
-
-Learning by example is funnier, so the content of the configmap is like the following:
-
-```yaml
-apiVersion: v1
-data:
-  provider: AWS
-  account: "111111111111" # Project ID or Account depending on the provider
-  environment: develop # The alias for the environment to name the project
-  region: eu-west-1
-  name: your-cluster-name
-kind: ConfigMap
-metadata:
-  name: cluster-info
-  namespace: kube-system
-```
 
 ### IAM permissions
 
@@ -112,6 +94,39 @@ For example, the expected names for AWS IAM Roles or GCP IAM ServiceAccounts, ar
 As you know in this point, we have automated everything, but IAM permissions must be already created,
 so you can find some examples on the [examples directory](./examples/README.md) for the providers we support.
 
+### A very special ConfigMap
+
+**A ConfigMap called `cluster-info`**, deployed inside the namespace `kube-system`. This resource is used to customize
+some deployments according to the cloud provider, the environment, etc.
+
+Learning by example is funnier, so the content of the configmap is like the following:
+
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-info
+  namespace: kube-system
+data:
+  # The provider. Available values are: AWS, GCP
+  provider: AWS 
+  # Project ID on GCP, or Account number on AWS
+  account: "111111111111" 
+  region: eu-west-1
+  name: your-kubernetes-cluster-name
+```
+
+## How to deploy manually
+
+⚠️Let's start clarifying that the purpose for this project is not to be deployed by hand but deployed by using GitOps, 
+with tools like FluxCD or ArgoCD.
+
+This repository is composed by several projects that can be deployed using `Kustomize` and some others that use `Helm`. 
+They are all allocated inside `deploy` directory, and you can deploy them all step by step by entering one directory, 
+deploying its content and then going to the next.
+
+Now, please deploy this by using automation tools. Deeper information in the following sections 🙂
+
 ## How to deploy using Flux
 
 SREs understand how difficult is to deploy everything, so we have done that task for you to make it easier.
@@ -121,7 +136,7 @@ and Kustomization as follows:
 
 ```yaml
 ---
-# Git repository for Tooling Stack
+# Point git repository for Tooling Stack
 apiVersion: source.toolkit.fluxcd.io/v1beta1
 kind: GitRepository
 metadata:
@@ -131,7 +146,7 @@ spec:
   interval: 20s
   ref:
     branch: master
-    tag: v0.3.0
+    tag: v0.1.0
   secretRef:
     name: flux-system
   url: ssh://git@github.com/prosimcorp/tooling-stack.git
@@ -146,7 +161,7 @@ spec:
   interval: 10m
   retryInterval: 1m
   path: ./flux/develop
-  prune: true
+  prune: false
   sourceRef:
     kind: GitRepository
     name: tooling-stack
@@ -182,11 +197,25 @@ kubectl rollout restart -n kube-system deployment.apps/ebs-csi-controller
 kubectl rollout restart -n kube-system daemonset.apps/ebs-csi-node
 ```
 
+### _Why isn't External Secrets included?_
+
+We did it at the very beginning, and we still include it in our internal clusters to get the secrets from our vault.
+So we recommend it a lot. The key point is that the scope of this repository is to help to automate Kubernetes creation 
+stage with the basics, and the basics are different for every company. [External Secrets](https://external-secrets.io/) 
+can be configured with a lot of secrets providers, for example, we use Hashicorp Vault 
+[for us](https://external-secrets.io/v0.5.7/provider-hashicorp-vault/). 
+
+And now the question: which one do we choose for you?
+
+For these reasons, we finally discarded it when made this repository public. But you can fork this repository and include
+External Secrets' deployment with the same design we used, just for your needs. That way we update the rest of the tools, 
+and your responsibility is only updating the manifests for External Secrets 😎
+
 ---
 
 ## How to collaborate
 
-1. Open an issue and discuss about the problem to find together the best way to solve it
+1. Open an issue and discuss the problem to find together the best way to solve it
 2. Fork the repository, create a branch and change inside everything you need
 3. Launch a cluster pointing tooling-stack to your repository with the changes
 4. Open a Pull Request to merge your code. Don't be dirty with the commits (squash them), be clear with the commit message, etc

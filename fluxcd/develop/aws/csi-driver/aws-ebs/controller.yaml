@@ -1,15 +1,13 @@
----
-# Deploy External Secrets CRs
 apiVersion: kustomize.toolkit.fluxcd.io/v1beta2
 kind: Kustomization
 metadata:
-  name: external-secrets-crs
+  name: aws-csi-driver
   namespace: flux-system
 spec:
   interval: 10m
   retryInterval: 1m
-  path: ./deploy/external-secrets/crs
-  prune: true
+  path: ./deploy/csi-driver/aws-ebs/controller
+  prune: false
   sourceRef:
     kind: GitRepository
     name: tooling-stack

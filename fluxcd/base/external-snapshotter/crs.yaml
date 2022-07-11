@@ -8,7 +8,7 @@ spec:
   interval: 10m
   retryInterval: 1m
   path: ./deploy/external-snapshotter/crs
-  prune: true
+  prune: false
   sourceRef:
     kind: GitRepository
     name: tooling-stack
