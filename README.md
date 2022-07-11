@@ -12,7 +12,7 @@
                                                          |      +----------------------+
                                                          |
 +-----------------------+       +--------------------+   |      +----------------------+
-| 1. Automated EKS      +------>| 2. FluxCD Template +---+----->|  4. Monitoring Stack |
+| 1. Automated EKS/GKE  +------>| 2. FluxCD Template +---+----->|  4. Monitoring Stack |
 +-----------------------+       +--------------------+   |      +----------------------+
                                                          |
                                                          |      +----------------------+
@@ -160,7 +160,7 @@ metadata:
 spec:
   interval: 10m
   retryInterval: 1m
-  path: ./flux/develop
+  path: ./fluxcd/develop
   prune: false
   sourceRef:
     kind: GitRepository
@@ -202,8 +202,8 @@ kubectl rollout restart -n kube-system daemonset.apps/ebs-csi-node
 We did it at the very beginning, and we still include it in our internal clusters to get the secrets from our vault.
 So we recommend it a lot. The key point is that the scope of this repository is to help to automate Kubernetes creation 
 stage with the basics, and the basics are different for every company. [External Secrets](https://external-secrets.io/) 
-can be configured with a lot of secrets providers, for example, we use Hashicorp Vault 
-[for us](https://external-secrets.io/v0.5.7/provider-hashicorp-vault/). 
+can be configured with a lot of secrets providers, for example, 
+[we use Hashicorp Vault for it](https://external-secrets.io/v0.5.7/provider-hashicorp-vault/). 
 
 And now the question: which one do we choose for you?
 
