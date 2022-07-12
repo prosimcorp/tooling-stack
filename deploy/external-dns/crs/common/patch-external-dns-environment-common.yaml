@@ -1,0 +1,24 @@
+# Patch to add configuration parameters common to all cloud providers from 'cluster-info' ConfigMap
+---
+apiVersion: reforma.prosimcorp.com/v1alpha1
+kind: Patch
+metadata:
+  name: external-dns-environment-common
+spec:
+  synchronization:
+    time: "1m"
+  sources:
+    - apiVersion: v1
+      kind: ConfigMap
+      name: cluster-info
+      namespace: kube-system
+  target:
+    apiVersion: v1
+    kind: ConfigMap
+    name: external-dns-environment
+    namespace: external-dns
+  patchType: application/merge-patch+json
+  template: |
+    {{- $source := (index . 1) -}}
+    data:
+      EXTERNAL_DNS_TXT_OWNER_ID: "{{- $source.data.name -}}"

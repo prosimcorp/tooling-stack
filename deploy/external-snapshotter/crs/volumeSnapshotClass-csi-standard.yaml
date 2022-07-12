@@ -4,8 +4,11 @@ metadata:
   name: csi-standard
   annotations:
     snapshot.storage.kubernetes.io/is-default-class: "true"
-# This driver will be patched to match the right driver according to the cloud provider
+deletionPolicy: Delete
+
+# This driver is a placeholder and will be patched to match the right driver according to the cloud provider
 # AWS driver: ebs.csi.aws.com
 # GCP driver: pd.csi.storage.gke.io
+# DO driver: dobs.csi.digitalocean.com
 driver: default
-deletionPolicy: Delete
+

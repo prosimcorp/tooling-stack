@@ -27,3 +27,7 @@ spec:
     {{- if eq ($source.data.provider | lower) "gcp" }}
     driver: pd.csi.storage.gke.io
     {{ end }}
+
+    {{- if eq ($source.data.provider | lower) "do" }}
+    driver: dobs.csi.digitalocean.com
+    {{ end }}

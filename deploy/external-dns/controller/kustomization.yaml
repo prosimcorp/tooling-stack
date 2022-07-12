@@ -1,13 +1,39 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: external-dns
+namespace: &namespace external-dns
 
 resources:
   # ATTENTION:
-  # Before the next steps, it is mandatory to have created an IAM role acording to your provider
-  # Of course, without this IAM role, the controller can not work properly because of the permissions
+  # Before the next steps, it is mandatory to have created an IAM role (it whatever is needed for permissions) according
+  # to your provider
+  # Of course, without this permissions, the controller can not work properly because of the permissions
   # Ref: https://github.com/prosimcorp/tooling-stack.git//examples/<provider>/iam/external-dns.md
+
+  - namespace.yaml
 
   # Deploy the controller
   - https://github.com/kubernetes-sigs/external-dns.git//kustomize/?ref=v0.12.0
+
+patches:
+  # Delete default flags due to they will be defined using environment vars later
+  - target: &target
+      group: apps
+      version: v1
+      kind: Deployment
+      name: external-dns
+    patch: |-
+      - op: remove
+        path: /spec/template/spec/containers/0/args
+
+  # Add a ConfigMap and Secret that will be patched according to the provider with all the configuration parameters, etc.
+  - target: *target
+    patch: |-
+      - op: add
+        path: /spec/template/spec/containers/0/envFrom
+        value:
+          - configMapRef:
+              name: external-dns-environment
+          - secretRef:
+              name: external-dns-environment
+              optional: true

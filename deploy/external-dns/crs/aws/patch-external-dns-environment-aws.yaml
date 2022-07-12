@@ -1,0 +1,23 @@
+apiVersion: reforma.prosimcorp.com/v1alpha1
+kind: Patch
+metadata:
+  name: external-dns-environment-aws
+spec:
+  synchronization:
+    time: "1m"
+  sources:
+    - apiVersion: v1
+      kind: ConfigMap
+      name: cluster-info
+      namespace: kube-system
+  target:
+    apiVersion: v1
+    kind: ConfigMap
+    name: external-dns-environment
+    namespace: external-dns
+  patchType: application/merge-patch+json
+  template: |
+    {{- $source := (index . 1) -}}
+    data:
+      EXTERNAL_DNS_PROVIDER: aws
+      EXTERNAL_DNS_AWS_ZONE_TYPE: public

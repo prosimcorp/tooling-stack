@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: external-dns-environment
+  namespace: default
+data:
+  EXTERNAL_DNS_LOG_LEVEL: info
+  EXTERNAL_DNS_LOG_FORMAT: json
+  EXTERNAL_DNS_SOURCE: |-
+    service
+    ingress
+  EXTERNAL_DNS_INTERVAL: 1m
+  EXTERNAL_DNS_REGISTRY: txt
+
+  # The following ID is a placeholder that will be overridden with the name of the Kubernetes cluster
+  # obtained from the cluster-info ConfigMap
+  EXTERNAL_DNS_TXT_OWNER_ID: kubernetes-cluster-name
