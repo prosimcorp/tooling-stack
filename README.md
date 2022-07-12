@@ -12,7 +12,7 @@
                                                          |      +----------------------+
                                                          |
 +-----------------------+       +--------------------+   |      +----------------------+
-| 1. Automated EKS/GKE  +------>| 2. FluxCD Template +---+----->|  4. Monitoring Stack |
+| 1. Automated K8s      +------>| 2. FluxCD Template +---+----->|  4. Monitoring Stack |
 +-----------------------+       +--------------------+   |      +----------------------+
                                                          |
                                                          |      +----------------------+
@@ -20,13 +20,26 @@
                                                                 +----------------------+
 ```
 
+**[1] Automated K8S:** This stage consists of a Kubernetes cluster which is created and automated using GitOps approach.  
+We cover this stage with several repositories ready for different cloud providers:
+
+  * [Automated EKS](https://github.com/prosimcorp/automated-eks)
+  * [Automated GKE](https://github.com/prosimcorp/automated-gke)
+  * [Automated DO](https://github.com/prosimcorp/automated-do)
+
+> This stage can be covered for different cloud providers or with different technologies. Don't hesitate to code them 
+> if needed
+
+**[2] [FluxCD Template](https://github.com/prosimcorp/fluxcd-template)**
+
+**[3] [Tooling Stack](https://github.com/prosimcorp/tooling-stack)**
+
+**[4] [Monitoring Stack](https://github.com/prosimcorp/monitoring-stack)**
+
 ## Description
 
 Stack to deploy those tools you need inside the cluster (to deploy applications), which are not included by default
 in Kubernetes.
-
-This is the stack you need to be deployed before the
-[Monitoring Stack](https://github.com/prosimcorp/monitoring-stack)
 
 ## Motivation
 
@@ -45,23 +58,26 @@ This stack is made on top of well tested tools, but this does NOT mean zero spac
 Some newer tools will be tested on separated branches if we detect they help the developers or SRE members to work easier 
 and faster.
 
-While polishing any tool inside the stack, some parameters could differ between what we consider `develop` environment, and
-`production`: all the changes are always tested on `develop` environment first and stabilized, before promoting them 
-to `production` when changes become solid.
-
-By deploying the stack with `develop` parameters you can test all the stack with the latest changes, and collaborate 
-to improve it.
+While polishing any tool inside the stack, some parameters could differ between what we consider `develop` environment, 
+and `production`. All the changes are always tested on `develop` first, and stabilized before promoting them to `production` 
+when changes become solid.
 
 We can not cover the specific use case for all the cloud providers. For that reason we have decided to keep the scope
-limited to the major three or four, and depending on the time we can spend on this project, increase the number in the future. 
+limited to the major ones, and depending on the time we can spend on this project, increase the number in the future. 
 The problem here is not to maintain the agnostic operators or controllers with the most sane config parameters, but 
-those that are attached directly to a provider, like CSI controllers, that force us to do some magic tricks:
-**cough! cough! Amazon**
+those that are attached directly to a provider, like CSI controllers when not included by default on some provider, 
+that force us to do some magic tricks _**cough! cough! Amazon**_
+
+**Supported cloud providers:**
+
+- Amazon Web Services `aws`
+- Google Cloud Platform `gcp`
+- DigitalOcean `do`
 
 ## Some requirements here
 
 > All the following requirements are created inside Kubernetes on cluster creation if you create the cluster using
-> [Automated EKS](https://github.com/prosimcorp/automated-eks)
+> any flavor of [Automated K8S](./README.md#important)
 
 ### IAM permissions
 
@@ -108,24 +124,22 @@ metadata:
   name: cluster-info
   namespace: kube-system
 data:
-  # The provider. Available values are: AWS, GCP
+  # The provider. Available values are: AWS, GCP, DO
   provider: AWS 
-  # Project ID on GCP, or Account number on AWS
-  account: "111111111111" 
+  # Project ID on GCP, account number on AWS, or project name on DO
+  account: "111111111111"
   region: eu-west-1
   name: your-kubernetes-cluster-name
 ```
 
 ## How to deploy manually
 
-⚠️Let's start clarifying that the purpose for this project is not to be deployed by hand but deployed by using GitOps, 
-with tools like FluxCD or ArgoCD.
+> ⚠️The purpose for this project is not to be deployed by hand but deployed by using GitOps, 
+> with tools like FluxCD or ArgoCD.
 
-This repository is composed by several projects that can be deployed using `Kustomize` and some others that use `Helm`. 
-They are all allocated inside `deploy` directory, and you can deploy them all step by step by entering one directory, 
-deploying its content and then going to the next.
-
-Now, please deploy this by using automation tools. Deeper information in the following sections 🙂
+This repository is composed by deployments for several projects. Some ones can be deployed using `Kustomize` and some 
+others that use `Helm`. They are all allocated inside `deploy` directory, and you can deploy them all, step by step, 
+by entering one directory, deploying its content and then moving to the next.
 
 ## How to deploy using Flux
 
@@ -160,7 +174,7 @@ metadata:
 spec:
   interval: 10m
   retryInterval: 1m
-  path: ./fluxcd/develop
+  path: ./fluxcd/production/do
   prune: false
   sourceRef:
     kind: GitRepository
@@ -168,11 +182,30 @@ spec:
     namespace: flux-system
 ```
 
-Pay special attention to the `spec.path` because there is where the desired stack will be defined, setting
-the parameter to `./flux/develop` or to `./flux/production`
+Pay special attention to the `spec.path` parameter. There is where the desired stack is defined, setting
+the parameter according to the following pattern `./fluxcd/{environment}/{provider}`
 
-Anyway, as described previously, we did a template for you, with everything already configured on
-[FluxCD Template](https://github.com/prosimcorp/fluxcd-template), to make it easier to start.
+**Supported values:**
+
+- Environments: `develop`, `production`
+- Cloud providers: `aws`, `gcp`, `do`
+
+Examples:
+- Production values on DigitalOcean: 
+
+  ```yaml
+  ...
+  path: ./fluxcd/production/do
+  ```
+  
+- Develop values on GCP: 
+  ```yaml
+  ...
+  path: ./fluxcd/develop/gcp
+  ```
+
+Anyway, as described previously, we did a template for you with larger documentation to make it easier to start:
+[FluxCD Template](https://github.com/prosimcorp/fluxcd-template).
 
 ## Troubleshooting
 
@@ -214,6 +247,9 @@ and your responsibility is only updating the manifests for External Secrets 😎
 ---
 
 ## How to collaborate
+
+> By deploying the stack with `develop` parameters you can test all the stack with the latest changes, and collaborate 
+> to improve it.
 
 1. Open an issue and discuss the problem to find together the best way to solve it
 2. Fork the repository, create a branch and change inside everything you need
